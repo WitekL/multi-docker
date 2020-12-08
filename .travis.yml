@@ -1,0 +1,19 @@
+services:
+  - docker
+
+before_install:
+  - docker build -t witekl/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true witekl/react-test npm test
+
+after_sucess:
+  - docker build -t witekl/multi-client ./client
+  - docker build -t witekl/multi-nginx ./nginx
+  - docker build -t witekl/multi-server ./server
+  - docker build -t witekl/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push witekl/multi-client
+  - docker push witekl/multi-nginx
+  - docker push witekl/multi-server
+  - docker push witekl/multi-worker
